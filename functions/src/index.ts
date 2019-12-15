@@ -5,45 +5,25 @@ admin.initializeApp();
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
 //
-export const updateDepartment = functions.firestore.document('departments/{depId}').onUpdate(( change, context ) => {
-    // @ts-ignore
-    if ( change.before.data().name !== change.after.data().name ) {
-        const userRef = admin.firestore().collection('users');
-        userRef.get().then(( snapshot ) => {
-            snapshot.forEach(doc => {
-                // @ts-ignore
-                if ( doc.data().department === change.before.data().name ) {
-                    // @ts-ignore
-                    admin.firestore().collection('users').doc(doc.id).update({department: change.after.data().name}).then(( res ) => {
-                        console.log(res);
-                    }).catch(( err ) => {
-                        console.log(err)
-                    });
-                }
-            })
-        }).catch(err => {
-            console.log('Error getting documents', err);
-        });
-    }
-});
-
-
+// @ts-ignore
 export const deleteDepartment = functions.firestore.document('departments/{depId}').onDelete(( change, context ) => {
     const userRef = admin.firestore().collection('users');
     userRef.get().then(( snapshot ) => {
         snapshot.forEach(doc => {
             console.log('Delete department', '=>', change.data(), change.id);
             // @ts-ignore
+            console.log('LOGGER: ', '====>>>', change.data());
+            console.log('LOGGER: DOC', '====>>>', doc.data());
+            // @ts-ignore
             if ( doc.data().department === change.data().name ) {
                 // Delete user from Auth
                 admin.auth().deleteUser(doc.id)
                     .then(function () {
-                        console.log('Successfully deleted user from AUTH');
-                        // Delete user from database
+                        console.log('deleted user from same department in AUTH')
                         admin.firestore().collection('users').doc(doc.id).delete().then(( res ) => {
-                            console.log('Successfully deleted user from database', doc.id);
+                            console.log('Deleted user from DB');
                         }).catch(( err ) => {
-                            console.log(err);
+                            console.log('Could not delete user from DB');
                         });
                     })
                     .catch(function ( error ) {
@@ -57,4 +37,19 @@ export const deleteDepartment = functions.firestore.document('departments/{depId
         console.log(err);
     })
 });
+
+// export const passwordChange = functions.https.onCall(( data, context ) => {
+//     console.log('Password change!');
+//     console.log('DATA RECEIVED: ', data);
+//     console.log('CONTEXT RECEIVED: ', context);
+//
+//     // if (!context.auth) {
+//     //     // Throwing an HttpsError so that the client gets the error details.
+//     //     throw new functions.https.HttpsError('failed-precondition', 'The function must be called ' +
+//     //         'while authenticated.');
+//     // }
+//     return {text: 'OK'};
+// });
+
+
 

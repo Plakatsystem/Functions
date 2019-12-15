@@ -38,18 +38,26 @@ export const deleteDepartment = functions.firestore.document('departments/{depId
     })
 });
 
-// export const passwordChange = functions.https.onCall(( data, context ) => {
-//     console.log('Password change!');
-//     console.log('DATA RECEIVED: ', data);
-//     console.log('CONTEXT RECEIVED: ', context);
-//
-//     // if (!context.auth) {
-//     //     // Throwing an HttpsError so that the client gets the error details.
-//     //     throw new functions.https.HttpsError('failed-precondition', 'The function must be called ' +
-//     //         'while authenticated.');
-//     // }
-//     return {text: 'OK'};
-// });
+export const passwordChange = functions.https.onCall(( data, context ) => {
+    console.log('Password change!');
+    console.log('DATA RECEIVED: ', data);
+    console.log('CONTEXT RECEIVED: ', context);
+    if (!context.auth) {
+        // Throwing an HttpsError so that the client gets the error details.
+        throw new functions.https.HttpsError('failed-precondition', 'The function must be called ' +
+            'while authenticated.');
+    }
+    admin.auth().updateUser(data.uid, {password: data.pass}).then(( result ) => {
+        console.log('User password has been updated => ', data.uid);
+        return {success: 'true'};
+    }).catch(( err ) => {
+        console.log('User password has NOT been updated => ', data.uid, '===>> ', err);
+        return {success: 'false'};
+    });
+
+
+    // return {text: 'OK'};
+});
 
 
 

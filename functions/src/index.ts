@@ -7,13 +7,47 @@ admin.initializeApp();
 //
 // @ts-ignore
 export const deleteDepartment = functions.firestore.document('departments/{depId}').onDelete(( change, context ) => {
+    const postersRef = admin.firestore().collection('posters');
+    postersRef.get().then(( snapshot ) => {
+        snapshot.forEach(( doc ) => {
+            // @ts-ignore
+            if ( doc.data().department === change.data().name ) {
+                admin.firestore().collection('posters').doc(doc.id).delete().then(( res ) => {
+                    // @ts-ignore
+                    console.log('Poster deleted from Department', change.data().name)
+                }).catch(( err ) => {
+                    console.log(err);
+                })
+            }
+        })
+    }).catch(( error2 ) => {
+        console.log(error2);
+    });
+
+
+    const hungPostersRef = admin.firestore().collection('hungposters');
+    hungPostersRef.get().then(( snapshot ) => {
+        snapshot.forEach(( doc ) => {
+            // @ts-ignore
+            if ( doc.data().department === change.data().name ) {
+                admin.firestore().collection('hungposters').doc(doc.id).delete().then(( res ) => {
+                    // @ts-ignore
+                    console.log('Hungposter deleted from Department', change.data().name)
+                }).catch(( err ) => {
+                    console.log(err);
+                })
+            }
+        })
+    }).catch(( error2 ) => {
+        console.log(error2)
+    });
+
+
     const userRef = admin.firestore().collection('users');
+    console.log('Delete department', '=>', change.data(), change.id);
     userRef.get().then(( snapshot ) => {
         snapshot.forEach(doc => {
-            console.log('Delete department', '=>', change.data(), change.id);
             // @ts-ignore
-            console.log('LOGGER: ', '====>>>', change.data());
-            console.log('LOGGER: DOC', '====>>>', doc.data());
             // @ts-ignore
             if ( doc.data().department === change.data().name ) {
                 // Delete user from Auth
